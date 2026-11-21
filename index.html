@@ -47,7 +47,7 @@ async function lookup(){
  try{
  let res=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));if(!res.ok)throw Error('단어를 찾지 못했어. 철자를 확인해 줘.');let data=await res.json(),d=data[0],phon=d.phonetics?.find(x=>x.text)?.text||'',audio=d.phonetics?.find(x=>x.audio)?.audio||'',defs=[];
  (d.meanings||[]).forEach(m=>(m.definitions||[]).slice(0,3).forEach(x=>defs.push({pos:m.partOfSpeech,def:x.definition,ex:x.example||''})));
- let ko=await translate(defs[0]?.def||w);let syn=[...new Set((d.meanings||[]).flatMap(m=>(m.definitions||[]).flatMap(x=>x.synonyms||[])))].slice(0,12);
+ let ko=await translate(w);if(!ko||norm(ko)===norm(w)){ko=await translate(defs[0]?.def||w)}let syn=[...new Set((d.meanings||[]).flatMap(m=>(m.definitions||[]).flatMap(x=>x.synonyms||[])))].slice(0,12);
  box.innerHTML='<div class="row" style="justify-content:space-between"><div><div class="word">'+esc(d.word)+'</div><div class="muted">'+esc(phon)+'</div></div><button id="sayWord" class="secondary">🔊 발음</button></div><div class="meaning">'+esc(ko||'한국어 뜻을 가져오지 못했어. 아래 설명을 참고해 줘.')+'</div><div class="actions"><button id="saveFound">내 단어장에 저장</button><button id="moreBtn" class="secondary">더보기</button></div><div id="moreInfo" class="detail hidden"></div>';
  document.getElementById('sayWord').onclick=()=>{if(audio){let a=new Audio(audio);a.play().catch(()=>speak(d.word))}else speak(d.word)};
  document.getElementById('saveFound').onclick=()=>{add(d.word,ko||defs[0]?.def||'뜻 확인 필요');alert('단어장에 저장했어!')};
